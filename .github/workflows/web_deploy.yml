@@ -1,0 +1,32 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ] # 監聽 main 分支的上傳動作
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Enable Web
+        run: flutter config --enable-web
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      # 這裡會自動把網址設定為：https://你的帳號.github.io/你的專案名稱/
+      - name: Build Web
+        run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/web
